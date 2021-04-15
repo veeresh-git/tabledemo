@@ -9,53 +9,19 @@ import {
 } from "react-table";
 import "./table.scss";
 
-function useWindowSize() {
-  const [windowSize, setWindowSize] = useState({
-    width: undefined,
-    height: undefined,
-  });
-  useEffect(() => {
-    // Handler to call on window resize
-    function handleResize() {
-      // Set window width/height to state
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    }
-    // Add event listener
-    window.addEventListener("resize", handleResize);
-    // Call handler right away so state gets updated with initial window size
-    handleResize();
-    // Remove event listener on cleanup
-    return () => window.removeEventListener("resize", handleResize);
-  }, []); // Empty array ensures that effect is only run on mount
-  return windowSize;
-}
-
 function Table({
   data,
   columns,
   fetchData,
   loading,
   pageCount: controlledPageCount,
+  sortBy
 }) {
   const [defaultColumn, setdefaultColumn] = React.useState({
-    minWidth: (2.5*window.innerWidth)/100,
-    width:  (12.5*window.innerWidth)/100,
-    maxWidth: (33.3*window.innerWidth)/100,
+    minWidth: (2.5 * window.innerWidth) / 100,
+    width: (12.5 * window.innerWidth) / 100,
+    maxWidth: (33.3 * window.innerWidth) / 100,
   });
-
-  const size = useWindowSize();
-
-  useEffect(() => {
-    setdefaultColumn({
-      minWidth: (2.5*size.width)/100,
-      width: (12.5*size.width)/100,
-      maxWidth: (33.3*size.width)/100,
-    });
-  }, [size.width]);
-
 
   const {
     getTableProps,
@@ -81,14 +47,13 @@ function Table({
       columns,
       data,
       defaultColumn,
-      initialState: { pageIndex: 0 }, // Pass our hoisted table state
-      manualPagination: true, 
+      initialState: { pageIndex: 0 },
+      manualPagination: true,
       pageCount: controlledPageCount,
     },
     useColumnOrder,
     useBlockLayout,
     useResizeColumns,
-    useSortBy,
     usePagination
   );
 
@@ -110,11 +75,45 @@ function Table({
     fetchData({ pageIndex, pageSize });
   }, [fetchData, pageIndex, pageSize]);
 
+  const [selectedCol, SetselectedCol] = useState(columns[0].accessor);
+
+  const handleColChange = (e) => {
+    SetselectedCol(e.target.value);
+    if(selectedOrder !="none"){
+      sortBy(e.target.value,selectedOrder)
+      console.log(e.target.value,selectedCol)
+    }
+  };
+
+  const [selectedOrder, SetselectedOrder] = useState("none");
+
+  const handleOrderChange = (e) => {
+    SetselectedOrder(e.target.value);
+    sortBy(selectedCol,e.target.value)
+  };
+
   return (
     <div className="table_wrapper">
       <div className="Buttons_container">
         <button onClick={() => randomizeColumns({})}>Reorder Columns</button>
         <button onClick={resetResizing}>Reset Resizing</button>
+        <div className="sorting">
+        <p>Sort by coloumn:</p>
+        <select onChange={handleColChange} value={selectedCol}>
+          {columns.map((col, i) => (
+            <option key={i} value={col.accessor}>
+              {col.Header}
+            </option>
+          ))}
+        </select>
+        <p>Order:</p>
+        <select onChange={handleOrderChange} value={selectedOrder}>
+          <option value="none">None</option>
+          <option value="ascending">Ascending</option>
+          <option value="discending">Discending</option>
+        </select>
+        </div>
+        
       </div>
       <div className="table_container">
         <div {...getTableProps()} className="table">
@@ -122,18 +121,8 @@ function Table({
             {headerGroups.map((headerGroup) => (
               <div {...headerGroup.getHeaderGroupProps()} className="tr">
                 {headerGroup.headers.map((column) => (
-                  <div
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                    className="th"
-                  >
+                  <div {...column.getHeaderProps()} className="th">
                     {column.render("Header")}
-                    <span>
-                      {column.isSorted
-                        ? column.isSortedDesc
-                          ? " 🔽"
-                          : " 🔼"
-                        : ""}
-                    </span>
                     <div
                       {...column.getResizerProps()}
                       className={`resizer ${
@@ -163,7 +152,6 @@ function Table({
             })}
             <tr>
               {loading ? (
-                // Use our custom loading state to show a loading indicator
                 <td colSpan="10000">Loading...</td>
               ) : (
                 <td colSpan="10000">

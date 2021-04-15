@@ -2,12 +2,11 @@ import React, { useEffect, useState } from "react";
 import Table from "./commonTabe";
 
 function Holdings() {
-  let serverData = [];
+  const [tempData,settempData]=useState([])
   useEffect(() => {
     fetch("https://canopy-frontend-task.now.sh/api/holdings")
       .then((response) => response.json())
       .then((data) => {
-        console.log(data.payload);
         let arr = [];
         data.payload.map((item, i) => {
           arr.push({
@@ -20,7 +19,7 @@ function Holdings() {
             market_value_ccy: item.market_value_ccy,
           });
         });
-        serverData = arr;
+        settempData(arr)
       })
       .catch((err) => {
         console.log(err);
@@ -66,6 +65,20 @@ function Holdings() {
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = React.useRef(0);
 
+  const [coloumn, setcoloumn] = React.useState("");
+  const [order, setorder] = React.useState("");
+
+  function shuffle(arr) {
+    arr = [...arr];
+    const shuffled = [];
+    while (arr.length) {
+      const rand = Math.floor(Math.random() * arr.length);
+      shuffled.push(arr.splice(rand, 1)[0]);
+    }
+    return shuffled;
+  }
+
+
   const fetchData = React.useCallback(({ pageSize, pageIndex }) => {
     // This will get called when the table needs new data
     // You could fetch your data from literally anywhere,
@@ -83,18 +96,57 @@ function Holdings() {
       if (fetchId === fetchIdRef.current) {
         const startRow = pageSize * pageIndex;
         const endRow = startRow + pageSize;
-        setData(serverData.slice(startRow, endRow));
+        if(coloumn){
+          let arr=[];
+          if(order==="none"){
+            arr=shuffle(tempData)
+            setData(arr.slice(startRow, endRow));
 
-        // Your server could send back total page count.
-        // For now we'll just fake it, too
-        setPageCount(Math.ceil(serverData.length / pageSize));
-
-        setLoading(false);
+          // Your server could send back total page count.
+          // For now we'll just fake it, too
+          setPageCount(Math.ceil(arr.length / pageSize));
+  
+          setLoading(false);
+          }else{
+            tempData.sort((a, b) => {
+              if (a[coloumn] < b[coloumn]) {
+                if (order === "ascending") {
+                  return -1;
+                } else if (order === "discending") {
+                  return 1;
+                }
+              }
+              if (a[coloumn] > b[coloumn]) {
+                if (order === "ascending") {
+                  return 1;
+                } else if (order === "discending") {
+                  return -1;
+                }
+              }
+              return 0;
+            });
+            setData(tempData.slice(startRow, endRow));
+            // Your server could send back total page count.
+            // For now we'll just fake it, too
+            setPageCount(Math.ceil(tempData.length / pageSize));
+            setLoading(false);
+          }
+        }else{
+          console.log(tempData)
+          setData(tempData.slice(startRow, endRow));
+          // Your server could send back total page count.
+          // For now we'll just fake it, too
+          setPageCount(Math.ceil(tempData.length / pageSize));
+          setLoading(false);
+        }
       }
     }, 1000);
-  }, []);
+  }, [coloumn,order,tempData]);
 
-  console.log(data);
+  const handleSort = (coloumn, order) => {
+    setcoloumn(coloumn)
+    setorder(order)
+  };
 
   return (
     <Table
@@ -103,6 +155,7 @@ function Holdings() {
       fetchData={fetchData}
       loading={loading}
       pageCount={pageCount}
+      sortBy={handleSort}
     />
   );
 }
