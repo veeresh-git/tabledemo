@@ -1,50 +1,69 @@
 .App {
-  min-height: 100vh;
-}
-
-.search-form {
-  min-height: 10vh;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-
-.search-bar {
-  width: 50%;
-  border: none;
-  padding: 10px;
-  border: 1px solid black;
+.card{
+  width: 20vw;
+  height: 50%;
 }
-
-.search-button {
-  background-color: black;
-  padding: 10px 20px;
-  border: none;
+.header{
+  width: 100%;
+  position: relative;
+}
+.footer{
+  width: 100%;
+  padding: 10px;
+}
+.image_{
+  width: 100%;
+  height: auto;
+}
+.img_label{
+  position: absolute;
+  top: 0;
+  left: 0;
   color: white;
+  background-color: darkorange;
+  padding: 5px;
 }
 
-.recipes {
+.profile{
   display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+  margin: 5px 0px;
 }
 
-.text-center {
-  text-align: center;
+.profile_img{
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+  border-radius: 50%;
 }
 
-.item_container{
-  box-shadow: 0px 5px 20px rgb(71 71 71);
-  border-radius: 10%;
-  padding: 10px;
-  margin-bottom: 5%;
+span{
+  color: darkgoldenrod;
 }
 
-.item_title{
-  color: darkgrey;
+.title{
+  color: rgb(71, 69, 69);
+  font-weight: 700;
+  font-size: 20px;
 }
 
-.img_container{
+.footer_labels{
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 0px;
+  width: 100%;
+}
+.time{
+  color: darkgray;
+}
+.comments{
+  color: rgb(71, 69, 69);
 }
